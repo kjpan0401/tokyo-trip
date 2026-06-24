@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#e74c3c">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<title>東京行程 7/31-8/5</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#f5f0eb;--card:#fff;--accent:#e74c3c;--accent2:#2c3e50;--text:#333;--muted:#888;--border:#e8e0d8}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:100px}
+.header{background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff;padding:40px 20px 30px;text-align:center;position:relative;overflow:hidden}
+.header::after{content:"";position:absolute;bottom:-20px;left:0;right:0;height:40px;background:var(--bg);border-radius:50% 50% 0 0}
+.header h1{font-size:1.6em;font-weight:700;margin-bottom:4px}
+.header p{opacity:.85;font-size:.9em}
+.header .emoji{font-size:2em;margin-bottom:8px}
+.tabs{display:flex;overflow-x:auto;padding:10px 12px;gap:8px;position:sticky;top:0;background:var(--bg);z-index:100;-webkit-overflow-scrolling:touch}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex-shrink:0;padding:8px 16px;border-radius:20px;font-size:.85em;font-weight:600;cursor:pointer;transition:.2s;border:2px solid var(--border);background:var(--card);color:var(--muted);white-space:nowrap}
+.tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.day-content{padding:12px 16px;display:none}
+.day-content.active{display:block}
+.day-title{font-size:1.3em;font-weight:700;margin:8px 0 4px;color:var(--accent2)}
+.day-subtitle{color:var(--muted);font-size:.85em;margin-bottom:16px}
+.spot{background:var(--card);border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.06);border-left:4px solid var(--accent);position:relative}
+.spot.meal{border-left-color:#e67e22}
+.spot.transport{border-left-color:#3498db}
+.spot.hotel{border-left-color:#9b59b6}
+.spot.shopping{border-left-color:#2ecc71}
+.spot.note{border-left-color:#f39c12;background:#fffcf0}
+.spot-time{font-size:.75em;color:var(--accent);font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:4px}
+.spot-name{font-size:1.05em;font-weight:700;margin-bottom:4px}
+.spot-desc{font-size:.85em;color:#666;line-height:1.6}
+.spot-tag{display:inline-block;font-size:.7em;padding:2px 8px;border-radius:10px;font-weight:600;margin-top:6px;margin-right:4px}
+.tag-sightseeing{background:#ffeef0;color:#e74c3c}
+.tag-food{background:#fff3e0;color:#e67e22}
+.tag-transport{background:#e3f2fd;color:#1976d2}
+.tag-shop{background:#e8f5e9;color:#2e7d32}
+.tag-stay{background:#f3e5f5;color:#7b1fa2}
+.tag-event{background:#e0f7fa;color:#00838f}
+.important{background:#fff3cd;border-radius:12px;padding:12px 16px;margin-bottom:14px;font-size:.9em;font-weight:600;border:1px solid #ffc107;text-align:center}
+.important::before{content:"!! "}
+.important::after{content:" !!"}
+.info-section{background:var(--card);border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.info-section h3{font-size:.95em;margin-bottom:8px;color:var(--accent2)}
+.info-section ul{padding-left:20px;font-size:.85em;line-height:1.8;color:#555}
+
+.route-btn{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:8px 14px;border-radius:10px;background:linear-gradient(135deg,#4285f4,#3367d6);color:#fff;font-size:.8em;font-weight:600;text-decoration:none;transition:.2s;border:none;cursor:pointer}
+.route-btn:hover{transform:scale(1.03);box-shadow:0 3px 10px rgba(66,133,244,.4)}
+.route-btn:active{transform:scale(.97)}
+.route-btn svg{width:16px;height:16px;fill:#fff;flex-shrink:0}
+.route-btn .arrow{margin-left:2px;opacity:.7}
+
+.spot-loc{display:inline-flex;align-items:center;gap:4px;margin-top:6px;padding:5px 10px;border-radius:8px;background:#f0f7ff;color:#4285f4;font-size:.75em;font-weight:600;text-decoration:none;transition:.15s}
+.spot-loc:hover{background:#dceaff}
+.spot-loc svg{width:14px;height:14px;fill:#4285f4;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<div class="header">
+<div class="emoji">&#x1F5FC;</div>
+<h1>東京六日遊</h1>
+<p>2026 / 7 / 31 (五) ~ 8 / 5 (二)</p>
+</div>
+
+<div class="tabs" id="tabs">
+<div class="tab active" data-day="0">DAY1<br><small>7/31</small></div>
+<div class="tab" data-day="1">DAY2<br><small>8/1</small></div>
+<div class="tab" data-day="2">DAY3<br><small>8/2</small></div>
+<div class="tab" data-day="3">DAY4<br><small>8/3</small></div>
+<div class="tab" data-day="4">DAY5<br><small>8/4</small></div>
+<div class="tab" data-day="5">DAY6<br><small>8/5</small></div>
+<div class="tab" data-day="6">&#x1F4CB; 備忘</div>
+</div>
+
+<!-- DAY 1 -->
+<div class="day-content active" data-day="0">
+<div class="day-title">DAY 1 &mdash; 抵達東京</div>
+<div class="day-subtitle">秋葉原 → 烏森神社 → 淺草寺 → 晴空塔 → 新宿</div>
+
+<div class="spot transport">
+<div class="spot-time">&#9992; 00:10 起飛 → 04:25 抵達</div>
+<div class="spot-name">台灣虎航 IT216</div>
+<div class="spot-desc">TPE 台北桃園 → HND 東京羽田機場<br>飛行時間 3 小時 15 分鐘，直飛</div>
+<span class="spot-tag tag-transport">交通</span>
+</div>
+
+<div class="spot transport">
+<div class="spot-time">&#x1F689; 05:09 ~ 05:43</div>
+<div class="spot-name">羽田機場 → 秋葉原</div>
+<div class="spot-desc">東京單軌電車（區間快速）→ 濱松町 → JR山手線 → 秋葉原<br>約 34 分鐘</div>
+<a class="route-btn" href="https://www.google.com/maps/dir/?api=1&origin=Haneda+Airport,+Tokyo&destination=Akihabara+Station,+Tokyo&travelmode=transit" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>查看即時路線 <span class="arrow">→</span></a>
+<span class="spot-tag tag-transport">交通</span>
+</div>
+
+<div class="spot">
+<div class="spot-time">&#x1F3EA; ~06:00</div>
+<div class="spot-name">秋葉原站 寄放行李</div>
+<div class="spot-desc">先到秋葉原站放行李，附近超商吃早餐<br>&#x1F37C; 月台上可以喝每個地區不一樣的牛奶！</div>
+<a class="spot-loc" href="https://www.google.com/maps/search/?api=1&query=Akihabara+Station+Tokyo" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>在地圖上查看</a>
+<span class="spot-tag tag-sightseeing">景點</span><span class="spot-tag tag-food">美食</span>
+</div>
+
+<div class="spot">
+<div class="spot-time">&#x26E9; 搭車約 16 分</div>
+<div class="spot-name">烏森神社</div>
+<div class="spot-desc">從秋葉原搭 JR 山手線到新橋站，步行約 8 分鐘<br>參觀一下、買個特別版御守</div>
+<a class="route-btn" href="https://www.google.com/maps/dir/?api=1&origin=Akihabara+Station,+Tokyo&destination=烏森神社+Shinbashi+Tokyo&travelmode=transit" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>秋葉原→烏森神社 即時路線 <span class="arrow">→</span></a>
+<span class="spot-tag tag-sightseeing">景點</span>
+</div>
+
+<div class="spot">
+<div class="spot-time">&#x1F3EF; 搭車約 25 分</div>
+<div class="spot-name">淺草寺</div>
+<div class="spot-desc">從烏森神社步行到新橋站 → 淺草線到淺草站<br>逛一逛仲見世通，等晴空塔開門</div>
+<a class="route-btn" href="https://www.google.com/maps/dir/?api=1&origin=烏森神社+Shinbashi+Tokyo&destination=Senso-ji+Temple+Asakusa+Tokyo&travelmode=transit" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>烏森神社→淺草寺 即時路線 <span class="arrow">→</span></a>
+<span class="spot-tag tag-sightseeing">景點</span>
+</div>
+
+<div class="spot meal">
+<div class="spot-time">&#x1F375; 到晴空塔前</div>
+<div class="spot-name">東京晴空塔抹茶</div>
+<div class="spot-desc">淺草走路 4 分鐘到 Asakusa Station，搭東武晴空塔線 3 分鐘<br>先去喝有名的抹茶，可以逛完再去或吃完午餐再喝</div>
+<a class="route-btn" href="https://www.google.com/maps/dir/?api=1&origin=Senso-ji+Temple+Asakusa+Tokyo&destination=Tokyo+Skytree&travelmode=transit" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>淺草寺→晴空塔 即時路線 <span class="arrow">→</span></a>
+<span class="spot-tag tag-food">美食</span>
+</div>
+
+<div class="spot meal">
+<div class="spot-time">&#x1F356; 12:00</div>
+<div class="spot-name">晴空塔 敘敘苑燒肉（已訂位）</div>
+<div class="spot-desc">包廂，有 5% 包廂費用<br>好好享受午餐！</div>
+<a class="spot-loc" href="https://www.google.com/maps/search/?api=1&query=叙々苑+Tokyo+Skytree+Solamachi" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>在地圖上查看</a>
+<span class="spot-tag tag-food">已訂位</span>
+</div>
+
+<div class="spot shopping">
+<div class="spot-time">&#x1F6CD; 午餐後</div>
+<div class="spot-name">逛東京晴空塔 Solamachi</div>
+<div class="spot-desc">很多東西可以逛，可以逛到等孟翰沁霖到新宿</div>
+<a class="spot-loc" href="https://www.google.com/maps/search/?api=1&query=Tokyo+Solamachi" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>在地圖上查看</a>
+<span class="spot-tag tag-shop">購物</span>
+</div>
+
+<div class="spot transport">
+<div class="spot-time">&#x1F4BC; 下午</div>
+<div class="spot-name">回秋葉原拿行李 → 民宿</div>
+<div class="spot-desc">從晴空塔回秋葉原拿行李，走 5 分鐘到岩本町站<br>搭同一條線到笹塚站（民宿），不用提著行李換車！</div>
+<a class="route-btn" href="https://www.google.com/maps/dir/?api=1&origin=Tokyo+Skytree&destination=Akihabara+Station,+Tokyo&travelmode=transit" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>晴空塔→秋葉原 即時路線 <span class="arrow">→</span></a>
+<br>
+<a class="route-btn" href="https://www.google.com/maps/dir/?api=1&origin=Iwamotocho+Station,+Tokyo&destination=Sasazuka+Station,+Tokyo&travelmode=transit" target="_blank" style="background:linear-gradient(135deg,#34a853,#2d8f47)"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>岩本町→笹塚(民宿) 即時路線 <span class="arrow">→</span></a>
+<span class="spot-tag tag-transport">交通</span>
+</div>
+
+<div class="spot">
+<div class="spot-time">&#x1F303; 傍晚~晚上</div>
+<div class="spot-name">新宿 歌舞伎町 / 63ANGEL</div>
+<div class="spot-desc">從民宿搭地鐵 4 分鐘到新宿<br>逛歌舞伎町，等 63ANGEL<br>結束後新宿小逛一下再回民宿</div>
+<a class="route-btn" href="https://www.google.com/maps/dir/?api=1&origin=Sasazuka+Station,+Tokyo&destination=Kabukicho+Shinjuku+Tokyo&travelmode=transit" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>民宿→歌舞伎町 即時路線 <span class="arrow">→</span></a>
+<span class="spot-tag tag-sightseeing">景點</span><span class="spot-tag tag-event">活動</span>
+</div>
+
+<div class="important">一定要帶佳勳哥兒去超商！！！</div>
+
+<div class="spot hotel">
+<div class="spot-time">&#x1F3E0; 住宿</div>
+<div class="spot-name">笹塚民宿</div>
+<div class="spot-desc">從新宿搭地鐵 4 分鐘到笹塚站，走路 9 分鐘到民宿<br>附近有超市、商店街、超商<br>第一天早點休息，隔天準備迪士尼海洋！</div>
+<a class="route-btn" href="https://www.google.com/maps/dir/?api=1&origin=Shinjuku+Station,+Tokyo&destination=Sasazuka+Station,+Tokyo&travelmode=transit" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>新宿→笹塚(民宿) 即時路線 <span class="arrow">→</span></a>
+<span class="spot-tag tag-stay">住宿</span>
+</div>
+</div>
+
+<!-- DAY 2 -->
+<div class="day-content" data-day="1">
+<div class="day-title">DAY 2 &mdash; 迪士尼海洋</div>
+<div class="day-subtitle">一整天都在迪士尼海洋玩！</div>
+
+<div class="spot transport">
+<div class="spot-time">&#x1F689; 早上出發，車程約 1 小時 10 分</div>
+<div class="spot-name">民宿 → 迪士尼海洋</div>
+<div class="spot-desc">笹塚 → 京王新線到本八幡 → 轉新宿線 → 市谷轉車 → 舞濱<br>記得早點出門！</div>
+<a class="route-btn" href="https://www.google.com/maps/dir/?api=1&origin=Sasazuka+Station,+Tokyo&destination=Tokyo+DisneySea&travelmode=transit" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>民宿→迪士尼海洋 即時路線 <span class="arrow">→</span></a>
+<span class="spot-tag tag-transport">交通</span>
+</div>
+
+<div class="spot">
+<div class="spot-time">&#x1F3A2; 整天</div>
+<div class="spot-name">東京迪士尼海洋</div>
+<div class="spot-desc">盡情玩一整天！<br>記得查好想玩的設施跟表演時間</div>
+<a class="spot-loc" href="https://www.google.com/maps/search/?api=1&query=Tokyo+DisneySea" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>在地圖上查看</a>
+<span class="spot-tag tag-event">樂園</span>
+</div>
+
+<div class="spot hotel">
+<div class="spot-time">&#x1F3E0; 晚上</div>
+<div class="spot-name">回笹塚民宿休息</div>
+<div class="spot-desc">玩了一天好好休息，隔天長岡花火大會！</div>
+<a class="route-btn" href="https://www.google.com/maps/dir/?api=1&origin=Tokyo+DisneySea&destination=Sasazuka+Station,+Tokyo&travelmode=transit" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>迪士尼海洋→民宿 即時路線 <span class="arrow">→</span></a>
+<span class="spot-tag tag-stay">住宿</span>
+</div>
+</div>
+
+<!-- DAY 3 -->
+<div class="day-content" data-day="2">
+<div class="day-title">DAY 3 &mdash; 長岡花火大會（Day 1）</div>
+<div class="day-subtitle">日本三大花火盛會！搭專車前往</div>
+
+<div class="spot transport">
+<div class="spot-time">&#x1F68C; 09:15</div>
+<div class="spot-name">新宿西口出發</div>
+<div class="spot-desc">搭乘團體專車前往長岡<br>途中於休息站休息</div>
+<a class="route-btn" href="https://www.google.com/maps/dir/?api=1&origin=Sasazuka+Station,+Tokyo&destination=Shinjuku+Station+West+Exit,+Tokyo&travelmode=transit" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>民宿→新宿西口 即時路線 <span class="arrow">→</span></a>
+<span class="spot-tag tag-transport">交通</span>
+</div>
+
+<div class="spot">
+<div class="spot-time">&#x1F3D5; ~16:00（預計）</div>
+<div class="spot-name">抵達長岡煙火會場</div>
+<div class="spot-desc">到達會場，等待晚上的花火大會</div>
+<a class="spot-loc" href="https://www.google.com/maps/search/?api=1&query=長岡花火+Nagaoka+Fireworks+Festival" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>在地圖上查看</a>
+<span class="spot-tag tag-event">活動</span>
+</div>
+
+<div class="spot">
+<div class="spot-time">&#x1F386; 19:00 ~ 21:00</div>
+<div class="spot-name">長岡花火大會</div>
+<div class="spot-desc">煙火開始！約 2 小時的壯觀花火表演<br>日本三大花火之一，超級壯觀！</div>
+<span class="spot-tag tag-event">重頭戲</span>
+</div>
+
+<div class="spot transport">
+<div class="spot-time">&#x1F68C; 22:30</div>
+<div class="spot-name">長岡會場出發 → 飯店</div>
+<div class="spot-desc">煙火結束後搭乘專車前往當晚下榻的飯店</div>
+<span class="spot-tag tag-transport">專車接送</span>
+</div>
+
+<div class="spot hotel">
+<div class="spot-time">&#x1F3E8; ~24:30</div>
+<div class="spot-name">上越綠色廣場飯店</div>
+<div class="spot-desc">Hotel Green Plaza Joetsu<br>預計隔日凌晨 00:30 抵達，辦理入住手續<br>好好休息，回味煙火帶來的感動</div>
+<a class="spot-loc" href="https://www.google.com/maps/search/?api=1&query=Hotel+Green+Plaza+Joetsu" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>在地圖上查看</a>
+<span class="spot-tag tag-stay">住宿</span>
+</div>
+</div>
+
+<!-- DAY 4 -->
+<div class="day-content" data-day="3">
+<div class="day-title">DAY 4 &mdash; 長岡花火（Day 2）→ 東京</div>
+<div class="day-subtitle">GALA湯澤 → 越後湯澤 → 新宿 → 思出橫丁</div>
+
+<div class="spot hotel">
+<div class="spot-time">&#x1F3E8; 10:30</div>
+<div class="spot-name">飯店退房，集合出發</div>
+<div class="spot-desc">在飯店享用完早餐後，準備返回東京</div>
+<span class="spot-tag tag-stay">住宿</span>
+</div>
+
+<div class="spot">
+<div class="spot-time">&#x1F3D4; 11:00</div>
+<div class="spot-name">GALA湯澤</div>
+<div class="spot-desc">搭乘來回纜車，欣賞美景<br>附贈湯澤高原纜車來回票券</div>
+<a class="spot-loc" href="https://www.google.com/maps/search/?api=1&query=GALA+Yuzawa+Station" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>在地圖上查看</a>
+<span class="spot-tag tag-sightseeing">景點</span>
+</div>
+
+<div class="spot meal">
+<div class="spot-time">&#x1F371; 午餐時間</div>
+<div class="spot-name">GALA湯澤午餐</div>
+<div class="spot-desc">在 GALA 渡假村享用午餐</div>
+<span class="spot-tag tag-food">美食</span>
+</div>
+
+<div class="spot shopping">
+<div class="spot-time">&#x1F381; 13:00 ~ 13:10</div>
+<div class="spot-name">越後湯澤站</div>
+<div class="spot-desc">GALA湯澤出發，抵達越後湯澤站<br>自由選購當地特產或伴手禮</div>
+<a class="spot-loc" href="https://www.google.com/maps/search/?api=1&query=Echigo-Yuzawa+Station" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>在地圖上查看</a>
+<span class="spot-tag tag-shop">購物</span>
+</div>
+
+<div class="spot transport">
+<div class="spot-time">&#x1F689; ~18:00</div>
+<div class="spot-name">返回新宿車站西口</div>
+<div class="spot-desc">搭專車返回東京，於新宿車站西口解散</div>
+<span class="spot-tag tag-transport">專車接送</span>
+</div>
+
+<div class="spot meal">
+<div class="spot-time">&#x1F362; 18:00 過後</div>
+<div class="spot-name">思出橫丁</div>
+<div class="spot-desc">居酒屋串燒之類的吃個晚餐<br>或是去鳥貴族也可以</div>
+<a class="route-btn" href="https://www.google.com/maps/dir/?api=1&origin=Shinjuku+Station+West+Exit,+Tokyo&destination=思い出横丁+Shinjuku+Tokyo&travelmode=walking" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>新宿西口→思出橫丁 即時路線 <span class="arrow">→</span></a>
+<span class="spot-tag tag-food">美食</span>
+</div>
+
+<div class="spot shopping">
+<div class="spot-time">&#x1F6CD; 晚餐後</div>
+<div class="spot-name">逛堂吉軻德、藥妝店</div>
+<div class="spot-desc">吃完晚餐可以去逛逛採購</div>
+<a class="spot-loc" href="https://www.google.com/maps/search/?api=1&query=Don+Quijote+Shinjuku+Tokyo" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>新宿堂吉軻德</a>
+<span class="spot-tag tag-shop">購物</span>
+</div>
+</div>
+
+<!-- DAY 5 -->
+<div class="day-content" data-day="4">
+<div class="day-title">DAY 5 &mdash; 池袋 + 原宿</div>
+<div class="day-subtitle">上午池袋逛街 → 下午原宿血拼</div>
+
+<div class="spot transport">
+<div class="spot-time">&#x1F689; 早上</div>
+<div class="spot-name">民宿 → 池袋</div>
+<div class="spot-desc">從笹塚出發前往池袋</div>
+<a class="route-btn" href="https://www.google.com/maps/dir/?api=1&origin=Sasazuka+Station,+Tokyo&destination=Ikebukuro+Station,+Tokyo&travelmode=transit" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>民宿→池袋 即時路線 <span class="arrow">→</span></a>
+<span class="spot-tag tag-transport">交通</span>
+</div>
+
+<div class="spot meal">
+<div class="spot-time">&#x1F354; 早上</div>
+<div class="spot-name">池袋附近吃早餐</div>
+<div class="spot-desc">可以吃麥當勞，附近也有甜甜圈</div>
+<a class="spot-loc" href="https://www.google.com/maps/search/?api=1&query=McDonald's+near+Ikebukuro+Station+Tokyo" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>附近麥當勞</a>
+<span class="spot-tag tag-food">美食</span>
+</div>
+
+<div class="spot shopping">
+<div class="spot-time">&#x1F3EC; 上半天</div>
+<div class="spot-name">池袋逛街</div>
+<div class="spot-desc">池袋太陽城、山田電機池袋總店<br>逛街、扭蛋跟玩具都有！</div>
+<a class="spot-loc" href="https://www.google.com/maps/search/?api=1&query=Sunshine+City+Ikebukuro+Tokyo" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>池袋太陽城</a>
+&nbsp;
+<a class="spot-loc" href="https://www.google.com/maps/search/?api=1&query=Yamada+Denki+LABI+Ikebukuro" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>山田電機</a>
+<span class="spot-tag tag-shop">購物</span>
+</div>
+
+<div class="spot transport">
+<div class="spot-time">&#x1F689; ~16:00</div>
+<div class="spot-name">池袋 → 原宿</div>
+<div class="spot-desc">車程約 15 分鐘</div>
+<a class="route-btn" href="https://www.google.com/maps/dir/?api=1&origin=Ikebukuro+Station,+Tokyo&destination=Harajuku+Station,+Tokyo&travelmode=transit" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>池袋→原宿 即時路線 <span class="arrow">→</span></a>
+<span class="spot-tag tag-transport">交通</span>
+</div>
+
+<div class="spot shopping">
+<div class="spot-time">&#x1F45F; 下半天</div>
+<div class="spot-name">原宿逛街</div>
+<div class="spot-desc">蠻多衣服、鞋子等，很多店可以逛<br>&#x1F99E; 還有龍蝦堡 Luke's Lobster！</div>
+<a class="spot-loc" href="https://www.google.com/maps/search/?api=1&query=Ura-Harajuku+Takeshita+Street+Tokyo" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>原宿竹下通</a>
+&nbsp;
+<a class="spot-loc" href="https://www.google.com/maps/search/?api=1&query=Luke's+Lobster+Harajuku+Tokyo" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>Luke's Lobster</a>
+<span class="spot-tag tag-shop">購物</span><span class="spot-tag tag-food">美食</span>
+</div>
+
+<div class="spot transport">
+<div class="spot-time">&#x1F689; 晚上</div>
+<div class="spot-name">原宿 → 民宿</div>
+<div class="spot-desc">回笹塚民宿休息</div>
+<a class="route-btn" href="https://www.google.com/maps/dir/?api=1&origin=Harajuku+Station,+Tokyo&destination=Sasazuka+Station,+Tokyo&travelmode=transit" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>原宿→民宿 即時路線 <span class="arrow">→</span></a>
+<span class="spot-tag tag-transport">交通</span>
+</div>
+</div>
+
+<!-- DAY 6 -->
+<div class="day-content" data-day="5">
+<div class="day-title">DAY 6 &mdash; 最後採購 & 回家</div>
+<div class="day-subtitle">睡到自然醒 → 最後補貨 → 機場</div>
+
+<div class="spot hotel">
+<div class="spot-time">&#x1F634; 早上</div>
+<div class="spot-name">睡晚一點，退房</div>
+<div class="spot-desc">起床慢慢吃完早餐後退房</div>
+<span class="spot-tag tag-stay">住宿</span>
+</div>
+
+<div class="spot shopping">
+<div class="spot-time">&#x1F6CD; 上午~下午</div>
+<div class="spot-name">最後採購</div>
+<div class="spot-desc">看有沒有缺買的東西<br>藥妝、堂吉軻德、Bic Camera 最後補貨</div>
+<a class="spot-loc" href="https://www.google.com/maps/search/?api=1&query=Bic+Camera+Shinjuku+Tokyo" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>Bic Camera 新宿</a>
+&nbsp;
+<a class="spot-loc" href="https://www.google.com/maps/search/?api=1&query=Don+Quijote+Shinjuku+Tokyo" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>堂吉軻德</a>
+<span class="spot-tag tag-shop">購物</span>
+</div>
+
+<div class="spot transport">
+<div class="spot-time">&#9992; 待確認</div>
+<div class="spot-name">前往機場</div>
+<div class="spot-desc">買完就慢慢搭車去機場<br>（航班時間待討論）</div>
+<a class="route-btn" href="https://www.google.com/maps/dir/?api=1&origin=Shinjuku+Station,+Tokyo&destination=Haneda+Airport,+Tokyo&travelmode=transit" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>新宿→羽田機場 即時路線 <span class="arrow">→</span></a>
+<br>
+<a class="route-btn" href="https://www.google.com/maps/dir/?api=1&origin=Shinjuku+Station,+Tokyo&destination=Narita+Airport&travelmode=transit" target="_blank" style="background:linear-gradient(135deg,#34a853,#2d8f47)"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>新宿→成田機場 即時路線 <span class="arrow">→</span></a>
+<span class="spot-tag tag-transport">交通</span>
+</div>
+</div>
+
+<!-- 備忘 -->
+<div class="day-content" data-day="6">
+<div class="day-title">&#x1F4CB; 備忘清單</div>
+<div class="day-subtitle">必吃必逛 & 注意事項</div>
+
+<div class="info-section">
+<h3>&#x1F37D; 必吃清單</h3>
+<ul>
+<li>敘敘苑燒肉（DAY1 晴空塔，已訂位 12:00）</li>
+<li>東京晴空塔抹茶</li>
+<li>秋葉原月台牛奶</li>
+<li>思出橫丁居酒屋 / 鳥貴族</li>
+<li>原宿龍蝦堡 Luke's Lobster</li>
+<li>甜甜圈</li>
+<li>姿穎蛋糕店（待加入）</li>
+</ul>
+</div>
+
+<div class="info-section">
+<h3>&#x1F6CD; 必逛清單</h3>
+<ul>
+<li>堂吉軻德（Don Quijote）</li>
+<li>藥妝店</li>
+<li>Bic Camera</li>
+<li>池袋太陽城</li>
+<li>山田電機池袋總店（扭蛋、玩具）</li>
+<li>原宿（衣服、鞋子）</li>
+<li>晴空塔 Solamachi</li>
+</ul>
+</div>
+
+<div class="info-section">
+<h3>&#x26E9; 景點</h3>
+<ul>
+<li>烏森神社（買特別版御守）</li>
+<li>淺草寺</li>
+<li>東京晴空塔</li>
+<li>迪士尼海洋</li>
+<li>長岡花火大會</li>
+<li>GALA湯澤（纜車）</li>
+<li>歌舞伎町 / 63ANGEL</li>
+</ul>
+</div>
+
+<div class="info-section">
+<h3>&#x1F3E0; 住宿</h3>
+<ul>
+<li><b>DAY1,2,4,5：</b>笹塚民宿（新宿搭地鐵 4 分鐘到笹塚站，走路 9 分鐘）</li>
+<li><b>DAY3：</b>上越綠色廣場飯店（Hotel Green Plaza Joetsu）</li>
+</ul>
+</div>
+
+<div class="info-section">
+<h3>&#x2708; 航班</h3>
+<ul>
+<li><b>去程：</b>台灣虎航 IT216，7/31 00:10 TPE → 04:25 HND</li>
+<li><b>回程：</b>待確認</li>
+</ul>
+</div>
+
+<div class="important">一定要帶佳勳哥兒去超商！！！</div>
+</div>
+
+<script>
+const tabs=document.querySelectorAll('.tab');
+const contents=document.querySelectorAll('.day-content');
+tabs.forEach(t=>{
+  t.addEventListener('click',()=>{
+    tabs.forEach(x=>x.classList.remove('active'));
+    contents.forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.querySelector(`.day-content[data-day="${t.dataset.day}"]`).classList.add('active');
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+});
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js');}
+</script>
+</body>
+</html>
